@@ -1,5 +1,6 @@
-package discordBot;
+package discordBot.command;
 
+import discordBot.AbstractBot;
 import discordBot.exceptions.CommandException;
 import discordBot.exceptions.HelperException;
 import net.dv8tion.jda.api.entities.MessageChannel;

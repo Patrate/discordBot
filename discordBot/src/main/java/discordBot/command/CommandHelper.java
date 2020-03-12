@@ -1,4 +1,4 @@
-package discordBot;
+package discordBot.command;
 
 import java.util.Arrays;
 import java.util.HashMap;

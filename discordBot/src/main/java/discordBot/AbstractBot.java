@@ -13,9 +13,12 @@ import javax.security.auth.login.LoginException;
 
 import org.reflections.Reflections;
 
+import discordBot.command.AbstractCommand;
+import discordBot.command.HelpCommand;
 import discordBot.exceptions.CommandException;
 import discordBot.exceptions.CommandNotFoundException;
 import discordBot.exceptions.HelperException;
+import discordBot.exceptions.ValidatorException;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -57,7 +60,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 		commandList = new HashMap<String, AbstractCommand>();
 		try {
 			addCommand(new HelpCommand(this));
-		} catch(HelperException e) {
+		} catch (HelperException e) {
 			System.err.println("There is a helper error in the help command lol: " + e.getMessage());
 		}
 		initCommands(packageName);
@@ -66,7 +69,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 	}
 
 	/**
-	 * Abstract discord bot. Initialize the commands and the connexion with the
+	 * Abstract discord bot. Initialize the commands and the connection with the
 	 * default commandIdentifier "!"
 	 * 
 	 * @param packageName Name of the package containing the commands. Use
@@ -90,7 +93,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 	}
 
 	/**
-	 * Initialize the connexion to discord
+	 * Initialize the connection to discord
 	 * 
 	 * @throws LoginException If the bot can't connect to discord
 	 */
@@ -181,9 +184,11 @@ public abstract class AbstractBot extends ListenerAdapter {
 		try {
 			executeCommand(command, event);
 		} catch (CommandNotFoundException e) {
-			commandNotFoundException(e);
+			commandNotFoundException(event.getChannel(), e);
 		} catch (CommandException e) {
-			commandException(e);
+			commandException(event.getChannel(), e);
+		} catch (ValidatorException e) {
+			validatorException(event.getChannel(), e);
 		}
 	}
 
@@ -195,14 +200,15 @@ public abstract class AbstractBot extends ListenerAdapter {
 	 * @throws CommandNotFoundException If the command is not found in the
 	 *                                  commandList
 	 * @throws CommandException         If the command throw an exception
+	 * @throws ValidatorException       If the command syntax is wrong
 	 */
 	public void executeCommand(String commandName, MessageReceivedEvent event)
-			throws CommandNotFoundException, CommandException {
+			throws CommandNotFoundException, CommandException, ValidatorException {
 		AbstractCommand command = commandList.get(commandName);
 		if (command == null) {
 			throw new CommandNotFoundException(commandName);
 		}
-		command.execute(event);
+		command.run(event);
 	}
 
 	/**
@@ -220,12 +226,19 @@ public abstract class AbstractBot extends ListenerAdapter {
 	 * 
 	 * @param e
 	 */
-	protected abstract void commandNotFoundException(CommandNotFoundException e);
+	protected abstract void commandNotFoundException(MessageChannel channel, CommandNotFoundException e);
 
 	/**
 	 * Command executed whenever a command throw an exception
 	 * 
 	 * @param e
 	 */
-	protected abstract void commandException(CommandException e);
+	protected abstract void commandException(MessageChannel channel, CommandException e);
+	
+	/**
+	 * Command executed whenever a command fail the validation check
+	 * 
+	 * @param e
+	 */
+	protected abstract void validatorException(MessageChannel channel, ValidatorException e);
 }

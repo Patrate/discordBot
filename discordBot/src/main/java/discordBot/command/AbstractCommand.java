@@ -1,14 +1,18 @@
-package discordBot;
+package discordBot.command;
 
 import java.util.Arrays;
+import java.util.List;
 
+import discordBot.command.validator.AbstractValidator;
 import discordBot.exceptions.CommandException;
 import discordBot.exceptions.HelperException;
+import discordBot.exceptions.ValidatorException;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class AbstractCommand {
 	private String name;
 	private CommandHelper help;
+	private List<AbstractValidator> validators;
 
 	/**
 	 * A command with a helper
@@ -72,14 +76,33 @@ public abstract class AbstractCommand {
 	public CommandHelper getHelp() {
 		return help;
 	}
+	
+	public final void run(MessageReceivedEvent event) throws CommandException, ValidatorException {
+		preExecute(event);
+		execute(event);
+	}
 
+	/**
+	 * Check the syntax and the parameters of the command
+	 * @param event context of the command
+	 * @throws CommandException if an exception occur during the execution
+	 * @throws ValidatorException 
+	 */
+	private void preExecute(MessageReceivedEvent event) throws ValidatorException {
+		for(AbstractValidator validator:validators) {
+			if(!validator.check(event)) {
+				throw validator.getFailException();
+			}
+		}
+	}
+	
 	/**
 	 * Execute the command withing the context event
 	 * 
 	 * @param event context of the command
 	 * @throws CommandException if an exception occur during the execution
 	 */
-	public abstract void execute(MessageReceivedEvent event) throws CommandException;
+	protected abstract void execute(MessageReceivedEvent event) throws CommandException;
 
 	/**
 	 * Get the params of the command as an array of string containing all the
@@ -88,7 +111,7 @@ public abstract class AbstractCommand {
 	 * @param event the context of the command
 	 * @return a String array with all the keywords after the command name
 	 */
-	public String[] getParams(MessageReceivedEvent event) {
+	public static String[] getParams(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentRaw();
 		String[] splitted = message.split(" ");
 		return Arrays.copyOfRange(splitted, 1, splitted.length);
