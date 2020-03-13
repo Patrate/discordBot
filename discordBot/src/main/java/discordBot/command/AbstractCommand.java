@@ -117,7 +117,7 @@ public abstract class AbstractCommand {
 	 * @return a String array with all the keywords after the command name
 	 */
 	public static String[] getParams(MessageReceivedEvent event) {
-		String message = AbstractBot.getInstance().removePrefix(event.getMessage().getContentRaw());
+		String message = AbstractBot.getInstance().removePrefix(event.getChannel(), event.getMessage().getContentRaw());
 		String[] splitted = message.split(" ");
 		return Arrays.copyOfRange(splitted, 1, splitted.length);
 	}
