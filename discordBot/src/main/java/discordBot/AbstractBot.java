@@ -32,7 +32,8 @@ public abstract class AbstractBot extends ListenerAdapter {
 	private static AbstractBot INSTANCE;
 	
 	private Map<String, AbstractCommand> commandList;
-	private String commandIdentifier;
+	private String prefix;
+	private Map<MessageChannel, String> prefixes;
 
 	/***
 	 * Abstract discord bot. Initialize the commands and the connection. Add a
@@ -56,7 +57,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 	 * @throws LoginException                  Thrown if the bot can't connect to
 	 *                                         discord
 	 */
-	public AbstractBot(String packageName, String commandIdentifier)
+	public AbstractBot(String packageName, String prefix)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, LoginException {
 		commandList = new HashMap<String, AbstractCommand>();
@@ -67,7 +68,8 @@ public abstract class AbstractBot extends ListenerAdapter {
 		}
 		initCommands(packageName);
 		initConnexion();
-		this.commandIdentifier = commandIdentifier;
+		this.prefix = prefix;
+		prefixes = new HashMap<MessageChannel, String>();
 		_register(this);
 	}
 
@@ -104,15 +106,36 @@ public abstract class AbstractBot extends ListenerAdapter {
 	}
 	
 	public String getPrefix() {
-		return this.commandIdentifier;
+		return this.prefix;
 	}
 	
 	public void setPrefix(String commandIdentifier) {
-		this.commandIdentifier = commandIdentifier;
+		this.prefix = commandIdentifier;
 	}
 	
 	public String removePrefix(String text) {
-		return text.substring(commandIdentifier.length());
+		return text.substring(prefix.length());
+	}
+	
+	public String getPrefix(MessageChannel channel) {
+		String prefix = prefixes.get(channel);
+		if(prefix == null) {
+			prefixes.put(channel, prefix);
+			prefix = getPrefix();
+		}
+		return prefix;
+	}
+	
+	public void setPrefix(MessageChannel channel, String prefix) {
+		prefixes.put(channel, prefix);
+	}
+	
+	public String removePrefix(MessageChannel channel, String text) {
+		return text.substring(getPrefix(channel).length());
+	}
+	
+	public void clearPrefix() {
+		prefixes.clear();
 	}
 
 	/**
@@ -195,11 +218,42 @@ public abstract class AbstractBot extends ListenerAdapter {
 	 */
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
+		MessageChannel channel = event.getChannel();
+		String prefix = prefixes.get(channel);
+		if(prefix == null) {
+			prefixes.put(channel, prefix);
+			prefix = getPrefix();
+		}
+		processMessage(event, prefix);
+	}
+	
+	public void processMessage(MessageReceivedEvent event, String prefix) {
 		if (event.getAuthor().isBot()) {
 			return;
 		}
 		String message = event.getMessage().getContentRaw();
-		if (!message.startsWith(commandIdentifier)) {
+		if (!message.startsWith(prefix)) {
+			return;
+		}
+		message = removePrefix(event.getChannel(), message);
+		String command = message.split(" ", 0)[0];
+		try {
+			executeCommand(command, event);
+		} catch (CommandNotFoundException e) {
+			commandNotFoundException(event.getChannel(), e);
+		} catch (CommandException e) {
+			commandException(event.getChannel(), e);
+		} catch (ValidatorException e) {
+			validatorException(event.getChannel(), e);
+		}
+	}
+	
+	public void processMessage(MessageReceivedEvent event) {
+		if (event.getAuthor().isBot()) {
+			return;
+		}
+		String message = event.getMessage().getContentRaw();
+		if (!message.startsWith(prefix)) {
 			return;
 		}
 		message = removePrefix(message);
