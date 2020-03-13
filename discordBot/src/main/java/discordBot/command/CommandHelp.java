@@ -6,11 +6,11 @@ import java.util.Map;
 
 import discordBot.exceptions.HelperException;
 
-public class CommandHelper {
+public class CommandHelp {
 	private String description;
 	private Map<String, String> useCase;
 	
-	public CommandHelper(String description, String... useCaseList) throws HelperException {
+	public CommandHelp(String description, String... useCaseList) throws HelperException {
 		if (useCaseList.length % 2 == 1) {
 			throw new HelperException("UseCase length mismatch");
 		}
@@ -21,11 +21,11 @@ public class CommandHelper {
 		}
 	}
 	
-	public CommandHelper(String... help) throws HelperException {
+	public CommandHelp(String... help) throws HelperException {
 		this(help[0], Arrays.copyOfRange(help,1,help.length));
 	}
 
-	public CommandHelper(String description) throws HelperException {
+	public CommandHelp(String description) throws HelperException {
 		this(description, new String[0]);
 	}
 	

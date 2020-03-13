@@ -3,6 +3,7 @@ package discordBot.command;
 import java.util.Arrays;
 import java.util.List;
 
+import discordBot.AbstractBot;
 import discordBot.command.validator.AbstractValidator;
 import discordBot.exceptions.CommandException;
 import discordBot.exceptions.HelperException;
@@ -11,7 +12,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public abstract class AbstractCommand {
 	private String name;
-	private CommandHelper help;
+	private CommandHelp help;
 	private List<AbstractValidator> validators;
 
 	/**
@@ -21,7 +22,7 @@ public abstract class AbstractCommand {
 	 * @param help the commandHelper. Check how its built, or use the other
 	 *             constructors
 	 */
-	public AbstractCommand(String name, CommandHelper help) {
+	public AbstractCommand(String name, CommandHelp help) {
 		this.name = name;
 		this.help = help;
 	}
@@ -46,16 +47,16 @@ public abstract class AbstractCommand {
 		this(name, buildHelper(help));
 	}
 
-	private static CommandHelper buildHelper(String... help) {
+	private static CommandHelp buildHelper(String... help) {
 		if (help.length == 0) {
 			return null;
 		}
 		try {
-			return new CommandHelper(help);
+			return new CommandHelp(help);
 		} catch (HelperException e) {
 			try {
 				System.err.println("Error building helper useCase:" + e.getMessage());
-				return new CommandHelper(help[0]);
+				return new CommandHelp(help[0]);
 			} catch (HelperException e2) {
 				System.err.println("Error building helper totally:" + e2.getMessage());
 			}
@@ -73,7 +74,7 @@ public abstract class AbstractCommand {
 	/**
 	 * @return The help of the command
 	 */
-	public CommandHelper getHelp() {
+	public CommandHelp getHelp() {
 		return help;
 	}
 	
@@ -116,7 +117,7 @@ public abstract class AbstractCommand {
 	 * @return a String array with all the keywords after the command name
 	 */
 	public static String[] getParams(MessageReceivedEvent event) {
-		String message = event.getMessage().getContentRaw();
+		String message = AbstractBot.getInstance().removePrefix(event.getMessage().getContentRaw());
 		String[] splitted = message.split(" ");
 		return Arrays.copyOfRange(splitted, 1, splitted.length);
 	}

@@ -39,7 +39,7 @@ public class HelpCommand extends AbstractCommand {
 		} else if (command.getHelp() == null) {
 			message.append(DEFAULT_HELP + commandName);
 		} else {
-			CommandHelper helper = command.getHelp();
+			CommandHelp helper = command.getHelp();
 			message.append(helper.getDescription());
 			for (String useCase : helper.getUseCase().keySet()) {
 				message.append("\n\t");

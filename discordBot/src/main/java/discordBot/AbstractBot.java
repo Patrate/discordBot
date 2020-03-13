@@ -29,6 +29,8 @@ public abstract class AbstractBot extends ListenerAdapter {
 
 	private static final String DEFAULTIDENTIFIER = "!";
 
+	private static AbstractBot INSTANCE;
+	
 	private Map<String, AbstractCommand> commandList;
 	private String commandIdentifier;
 
@@ -66,6 +68,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 		initCommands(packageName);
 		initConnexion();
 		this.commandIdentifier = commandIdentifier;
+		_register(this);
 	}
 
 	/**
@@ -92,8 +95,24 @@ public abstract class AbstractBot extends ListenerAdapter {
 		this(packageName, DEFAULTIDENTIFIER);
 	}
 	
+	public static AbstractBot getInstance() {
+		return INSTANCE;
+	}
+	
+	private static void _register(AbstractBot b) {
+		INSTANCE = b;
+	}
+	
+	public String getPrefix() {
+		return this.commandIdentifier;
+	}
+	
 	public void setPrefix(String commandIdentifier) {
 		this.commandIdentifier = commandIdentifier;
+	}
+	
+	public String removePrefix(String text) {
+		return text.substring(commandIdentifier.length());
 	}
 
 	/**
@@ -183,7 +202,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 		if (!message.startsWith(commandIdentifier)) {
 			return;
 		}
-		message = message.substring(commandIdentifier.length());
+		message = removePrefix(message);
 		String command = message.split(" ", 0)[0];
 		try {
 			executeCommand(command, event);
@@ -223,6 +242,16 @@ public abstract class AbstractBot extends ListenerAdapter {
 	 */
 	public static void message(MessageChannel channel, String message) {
 		channel.sendMessage(message).queue();
+	}
+	
+	/**
+	 * Send a message from the bot to the channel specified
+	 * 
+	 * @param channel the channel to use
+	 * @param message the message to send
+	 */
+	public static void messageError(MessageChannel channel, String message) {
+		message(channel, DiscordHelper.colorRed(message));
 	}
 
 	/**

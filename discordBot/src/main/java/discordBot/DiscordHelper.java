@@ -57,7 +57,16 @@ public abstract class DiscordHelper {
 	 * @param text
 	 * @return
 	 */
-	public static String colorBlueHeading(String heading, String text) {
-		return "```ini\n[" + heading.trim() + "] " + text + "\n```";
+	public static String colorBlue(String text) {
+		return "```ini\n[" + text.trim() + "]\n```";
+	}
+	
+	/**
+	 * make text into a code block with "heading" colored in blue 
+	 * @param text
+	 * @return
+	 */
+	public static String colorRed(String text) {
+		return "```css\n[" + text.trim() + "]\n```";
 	}
 }
