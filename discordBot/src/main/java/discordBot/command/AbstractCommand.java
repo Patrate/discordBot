@@ -89,6 +89,10 @@ public abstract class AbstractCommand {
 	 * @throws ValidatorException 
 	 */
 	private void preExecute(MessageReceivedEvent event) throws ValidatorException {
+		// FIXME validators musn't be null 
+		if(validators == null) {
+			return;
+		}
 		for(AbstractValidator validator:validators) {
 			if(!validator.check(event)) {
 				throw validator.getFailException();

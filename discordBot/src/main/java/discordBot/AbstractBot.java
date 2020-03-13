@@ -91,6 +91,10 @@ public abstract class AbstractBot extends ListenerAdapter {
 			NoSuchMethodException, SecurityException, LoginException {
 		this(packageName, DEFAULTIDENTIFIER);
 	}
+	
+	public void setPrefix(String commandIdentifier) {
+		this.commandIdentifier = commandIdentifier;
+	}
 
 	/**
 	 * Initialize the connection to discord
@@ -179,7 +183,7 @@ public abstract class AbstractBot extends ListenerAdapter {
 		if (!message.startsWith(commandIdentifier)) {
 			return;
 		}
-		message = message.substring(1);
+		message = message.substring(commandIdentifier.length());
 		String command = message.split(" ", 0)[0];
 		try {
 			executeCommand(command, event);
